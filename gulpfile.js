@@ -17,13 +17,17 @@ var paths = {
     dest: '',
     docsDest: 'docs/README.md',
     examples: {
+        'Examples.Automata.DFA.OddOnes': {
+            src: 'examples/Examples/Automata/DFA/OddOnes.purs',
+            index: 'examples/Examples/Automata/DFA/OddOnes/index.js'
+        },
         'Examples.Automata.DFA.Turnstile': {
             src: 'examples/Examples/Automata/DFA/Turnstile.purs',
             index: 'examples/Examples/Automata/DFA/Turnstile/index.js'
         },
-        'Examples.Automata.DFA.OddOnes': {
-            src: 'examples/Examples/Automata/DFA/OddOnes.purs',
-            index: 'examples/Examples/Automata/DFA/OddOnes/index.js'
+        'Examples.Automata.DFA.ZeroZeroOne': {
+            src: 'examples/Examples/Automata/DFA/ZeroZeroOne.purs',
+            index: 'examples/Examples/Automata/DFA/ZeroZeroOne/index.js'
         }
     },
     manifests: [
@@ -36,11 +40,14 @@ var paths = {
 var options = {
     compiler: {},
     examples: {
+        'Examples.Automata.DFA.OddOnes': {
+            main: 'Examples.Automata.DFA.OddOnes'
+        },
         'Examples.Automata.DFA.Turnstile': {
             main: 'Examples.Automata.DFA.Turnstile'
         },
-        'Examples.Automata.DFA.OddOnes': {
-            main: 'Examples.Automata.DFA.OddOnes'
+        'Examples.Automata.DFA.ZeroZeroOne': {
+            main: 'Examples.Automata.DFA.ZeroZeroOne'
         }
     },
     pscDocs: {}
@@ -109,7 +116,7 @@ gulp.task('docs', function() {
       .pipe(gulp.dest(paths.docsDest));
 });
 
-gulp.task('examples-Examples.Automata.DFA.OddOnes-compile', ['make'], function() {
+gulp.task('examples-Examples.Automata.DFA.OddOnes-compile', function() {
     var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.DFA.OddOnes'].src];
     return gulp.src(src)
         .pipe(purescript.pscMake(options.examples['Examples.Automata.DFA.OddOnes']))
@@ -121,7 +128,7 @@ gulp.task('examples-Examples.Automata.DFA.OddOnes', ['examples-Examples.Automata
         .pipe(run('node'));
 });
 
-gulp.task('examples-Examples.Automata.DFA.Turnstile-compile', ['make'], function() {
+gulp.task('examples-Examples.Automata.DFA.Turnstile-compile', function() {
     var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.DFA.Turnstile'].src];
     return gulp.src(src)
         .pipe(purescript.pscMake(options.examples['Examples.Automata.DFA.Turnstile']))
@@ -133,7 +140,26 @@ gulp.task('examples-Examples.Automata.DFA.Turnstile', ['examples-Examples.Automa
         .pipe(run('node'));
 });
 
-gulp.task('examples', ['examples-Examples.Automata.DFA.Turnstile', 'examples-Examples.Automata.DFA.OddOnes']);
+gulp.task('examples-Examples.Automata.DFA.ZeroZeroOne-compile', function() {
+    var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.DFA.ZeroZeroOne'].src];
+    return gulp.src(src)
+        .pipe(purescript.pscMake(options.examples['Examples.Automata.DFA.ZeroZeroOne']))
+});
+
+gulp.task('examples-Examples.Automata.DFA.ZeroZeroOne', ['examples-Examples.Automata.DFA.ZeroZeroOne-compile'], function() {
+    process.env.NODE_PATH = path.resolve(paths.output);
+    return gulp.src(paths.examples['Examples.Automata.DFA.ZeroZeroOne'].index)
+        .pipe(run('node'));
+});
+
+gulp.task('examples', function() {
+    return runSequence('make'
+                      , [ 'examples-Examples.Automata.DFA.OddOnes'
+                        , 'examples-Examples.Automata.DFA.Turnstile'
+                        , 'examples-Examples.Automata.DFA.ZeroZeroOne'
+                        ]
+                      );
+});
 
 gulp.task('watch-browser', function() {
     gulp.watch(paths.src, ['browser', 'docs']);

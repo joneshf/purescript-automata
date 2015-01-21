@@ -61,9 +61,6 @@ module Examples.Automata.DFA.OddOnes where
     print "Will the machine accept the string '11'?"
     print $ run [One, One]
 
-    print "Will the machine accept the string '1111110011111'?"
-    print $ run [One, One, One, One, One, One, Zero, Zero, One, One, One, One, One]
-
   -- Again, boilerplate
   instance showState :: Show State where
     show Odd  = "Odd"
