@@ -1,0 +1,11 @@
+{
+  "name": "purescript-automata",
+  "version": "0.0.0",
+  "description": "PureScript representation of automata.",
+  "license": "MIT",
+  "dependencies": {
+    "purescript-sets": "~0.2.0",
+    "purescript-validation": "~0.0.3",
+    "purescript-foldable-traversable": "~0.2.1"
+  }
+}
