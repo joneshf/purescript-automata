@@ -36,7 +36,10 @@
 
      | Attempt to construct and validate a DFA.
 
-    dfa :: forall sigma state. (Ord sigma, Ord state) => Set state -> Set sigma -> (state -> sigma -> state) -> state -> Set state -> V [DFAError] (DFA state sigma)
+    dfa :: forall sigma state. (Ord sigma, Ord state) => S.Set state -> S.Set sigma -> (state -> sigma -> state) -> state -> S.Set state -> V [DFAError] (DFA state sigma)
+
+
+    union :: forall sigma state1 state2. (Ord sigma, Ord state1, Ord state2) => DFA state1 sigma -> DFA state2 sigma -> DFA (Tuple state1 state2) sigma
 
 
 
