@@ -1,6 +1,31 @@
 # Module Documentation
 
-## Module Automata.DFA
+## Module Automata.Combinators
+
+### Type Classes
+
+
+    class Concatenate a b c where
+
+      concatenate :: a -> b -> c
+
+
+    class Union a b c where
+
+      union :: a -> b -> c
+
+
+## Module Automata.Epsilon
+
+### Types
+
+
+    data Epsilon sigma where
+      Epsilon :: Epsilon sigma
+      Sigma :: sigma -> Epsilon sigma
+
+
+## Module Automata.Regular.DFA
 
 ### Types
 
@@ -10,7 +35,6 @@
 
     data DFA state sigma
 
-     F  The set of accepting states.
      | A DFA can be invalid in one of two conditions.
      | TODO: It'd be nice to validate that the transition function is total
      |       Maybe with `purescript-totally`
@@ -26,6 +50,10 @@
 
     instance showDFAError :: Show DFAError
 
+     F  The set of accepting states.
+
+    instance unionDFA :: (Ord sigma, Ord state1, Ord state2) => C.Union (DFA state1 sigma) (DFA state2 sigma) (DFA (Tuple state1 state2) sigma)
+
 
 ### Values
 
@@ -36,24 +64,33 @@
 
      | Attempt to construct and validate a DFA.
 
-    dfa :: forall sigma state. (Ord sigma, Ord state) => S.Set state -> S.Set sigma -> (state -> sigma -> state) -> state -> S.Set state -> V [DFAError] (DFA state sigma)
+    dfa :: forall sigma state. (Ord sigma, Ord state) => Set state -> Set sigma -> (state -> sigma -> state) -> state -> Set state -> V [DFAError] (DFA state sigma)
 
 
-    union :: forall sigma state1 state2. (Ord sigma, Ord state1, Ord state2) => DFA state1 sigma -> DFA state2 sigma -> DFA (Tuple state1 state2) sigma
-
-
-## Module Automata.NFA
+## Module Automata.Regular.NFA
 
 ### Types
 
 
-    data Epsilon sigma where
-      Epsilon :: Epsilon sigma
-      Sigma :: sigma -> Epsilon sigma
+    data NFA state sigma
 
 
-    data NFA state sigma where
-      NFA :: S.Set state -> S.Set sigma -> (state -> Epsilon sigma -> S.Set state) -> state -> S.Set state -> NFA state sigma
+    data NFAError
+
+
+### Type Class Instances
+
+
+    instance eqUnionStates :: (Eq s1, Eq s2) => Eq (UnionStates s1 s2)
+
+
+    instance ordUnionStates :: (Ord s1, Ord s2) => Ord (UnionStates s1 s2)
+
+
+    instance showNFAError :: Show NFAError
+
+
+    instance unionNFA :: (Ord sigma, Ord state1, Ord state2) => C.Union (NFA state1 sigma) (NFA state2 sigma) (NFA (UnionStates state1 state2) sigma)
 
 
 ### Values
@@ -61,8 +98,9 @@
 
     accepts :: forall sigma state. (Ord sigma, Ord state) => NFA state sigma -> [Epsilon sigma] -> Boolean
 
+     | Attempt to construct and validate an NFA.
 
-    intersects :: forall v. (Ord v) => S.Set v -> S.Set v -> Boolean
+    nfa :: forall sigma state. (Ord sigma, Ord state) => Set state -> Set sigma -> (state -> Epsilon sigma -> Set state) -> state -> Set state -> V [NFAError] (NFA state sigma)
 
 
 

@@ -1,6 +1,6 @@
-module Examples.Automata.DFA.Turnstile where
+module Examples.Automata.Regular.DFA.Turnstile where
 
-  import Automata.DFA (DFA(), DFAError(), dfa, accepts)
+  import Automata.Regular.DFA (DFA(), DFAError(), dfa, accepts)
 
   import Data.Function (on)
   import Data.Set (fromList, singleton)

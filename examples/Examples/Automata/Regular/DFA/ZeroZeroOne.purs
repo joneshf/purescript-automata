@@ -1,6 +1,6 @@
-module Examples.Automata.DFA.ZeroZeroOne where
+module Examples.Automata.Regular.DFA.ZeroZeroOne where
 
-  import Automata.DFA (DFA(), DFAError(), dfa, accepts)
+  import Automata.Regular.DFA (DFA(), DFAError(), dfa, accepts)
 
   import Data.Function (on)
   import Data.Set (fromList, singleton)

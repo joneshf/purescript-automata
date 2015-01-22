@@ -1,6 +1,7 @@
-module Examples.Automata.NFA.OneThirdFromEnd where
+module Examples.Automata.Regular.NFA.OneThirdFromEnd where
 
-  import Automata.NFA
+  import Automata.Epsilon (Epsilon(..))
+  import Automata.Regular.NFA
 
   import Data.Function (on)
   import Data.Set (Set(), empty, fromList, singleton)
@@ -26,15 +27,17 @@ module Examples.Automata.NFA.OneThirdFromEnd where
   initial = Q1
   accepting = singleton Q4
 
-  oneThirdFromEnd = NFA (fromList [Q1, Q2, Q3, Q4])
+  oneThirdFromEnd = nfa (fromList [Q1, Q2, Q3, Q4])
                         (fromList [Zero, One])
                         delta
                         initial
                         accepting
 
   run :: [Alphabet] -> String
-  run string =
-    if oneThirdFromEnd `accepts` (Sigma <$> string) then "Yes!" else "Nope!"
+  run string = runV show go oneThirdFromEnd
+    where
+      go n = if n `accepts` string' then "Yes!" else "Nope!"
+      string' = Sigma <$> string
 
   main = do
     print "Will the machine accept the string '000100'?"

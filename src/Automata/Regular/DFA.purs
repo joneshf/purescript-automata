@@ -1,25 +1,32 @@
-module Automata.DFA
+module Automata.Regular.DFA
   ( DFA()
   , DFAError(..)
   , accepts
   , dfa
-  , union
   ) where
 
   import Data.Foldable (all)
   import Data.Tuple (Tuple(..))
+  import Data.Set (Set(), fromList, member, toList, union)
   import Data.Validation (V(), invalid)
 
-  import qualified Data.Set as S
+  import qualified Automata.Combinators as C
 
   -- | A Deterministic Finite Automaton (DFA) is a 5-tuple (Q, Σ, δ, q₀, F)
   -- | We only expose the type.
   -- | We leave the smart constructor to validate a potential DFA.
-  data DFA state sigma = DFA (S.Set state)               -- Q  The set of states.
-                             (S.Set sigma)               -- Σ  The alphabet of transitions.
+  data DFA state sigma = DFA (Set state)               -- Q  The set of states.
+                             (Set sigma)               -- Σ  The alphabet of transitions.
                              (state -> sigma -> state) -- δ  The transition function.
                              state                     -- q₀ The initial state.
-                             (S.Set state)               -- F  The set of accepting states.
+                             (Set state)               -- F  The set of accepting states.
+
+  instance unionDFA
+    :: (Ord sigma, Ord state1, Ord state2)
+    => C.Union (DFA state1 sigma)
+               (DFA state2 sigma)
+               (DFA (Tuple state1 state2) sigma) where
+    union = unionImpl
 
   -- | A DFA can be invalid in one of two conditions.
   -- | TODO: It'd be nice to validate that the transition function is total
@@ -40,17 +47,17 @@ module Automata.DFA
           -> Boolean
   accepts (DFA _ _ d q0 f) inputs = go q0 inputs
     where
-      go q []     = q `S.member` f
+      go q []     = q `member` f
       go q (s:ss) = go (d q s) ss
 
   -- | Attempt to construct and validate a DFA.
   dfa :: forall sigma state
       .  (Ord sigma, Ord state)
-      => S.Set state
-      -> S.Set sigma
+      => Set state
+      -> Set sigma
       -> (state -> sigma -> state)
       -> state
-      -> S.Set state
+      -> Set state
       -> V [DFAError] (DFA state sigma)
   dfa states sigma d q0 f = validate (DFA states sigma d q0 f)
 
@@ -65,7 +72,7 @@ module Automata.DFA
                 => DFA state sigma
                 -> V [DFAError] (DFA state sigma)
   validateStart dfa@(DFA states _ _ q0 _)
-    | q0 `S.member` states = pure dfa
+    | q0 `member` states = pure dfa
     | otherwise          = invalid [StartState]
 
   validateAccept :: forall sigma state
@@ -76,21 +83,21 @@ module Automata.DFA
     | f `isSubsetOf` states = pure dfa
     | otherwise             = invalid [AcceptStates]
 
-  union :: forall sigma state1 state2
-        .  (Ord sigma, Ord state1, Ord state2)
-        => DFA state1 sigma
-        -> DFA state2 sigma
-        -> DFA (Tuple state1 state2) sigma
-  union (DFA s1 s d1 q1 f1) (DFA s2 _ d2 q2 f2) =
+  unionImpl :: forall sigma state1 state2
+           .  (Ord sigma, Ord state1, Ord state2)
+           => DFA state1 sigma
+           -> DFA state2 sigma
+           -> DFA (Tuple state1 state2) sigma
+  unionImpl (DFA s1 s d1 q1 f1) (DFA s2 _ d2 q2 f2) =
     DFA (product s1 s2)
         s
         (\(Tuple r1 r2) a -> Tuple (d1 r1 a) (d2 r2 a))
         (Tuple q1 q2)
-        (product f1 s2 `S.union` product s1 f2)
+        (product f1 s2 `union` product s1 f2)
 
   -- These should be in `purescript-sets` so they can be more efficient.
-  isSubsetOf :: forall v. (Ord v) => S.Set v -> S.Set v -> Boolean
-  isSubsetOf p q = all (flip S.member q) $ S.toList p
+  isSubsetOf :: forall v. (Ord v) => Set v -> Set v -> Boolean
+  isSubsetOf p q = all (flip member q) $ toList p
 
-  product :: forall v1 v2. (Ord v1, Ord v2) => S.Set v1 -> S.Set v2 -> S.Set (Tuple v1 v2)
-  product s1 s2 = S.fromList $ Tuple <$> S.toList s1 <*> S.toList s2
+  product :: forall v1 v2. (Ord v1, Ord v2) => Set v1 -> Set v2 -> Set (Tuple v1 v2)
+  product s1 s2 = fromList $ Tuple <$> toList s1 <*> toList s2
