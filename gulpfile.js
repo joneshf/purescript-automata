@@ -28,6 +28,10 @@ var paths = {
         'Examples.Automata.DFA.ZeroZeroOne': {
             src: 'examples/Examples/Automata/DFA/ZeroZeroOne.purs',
             index: 'examples/Examples/Automata/DFA/ZeroZeroOne/index.js'
+        },
+        'Examples.Automata.NFA.OneThirdFromEnd': {
+            src: 'examples/Examples/Automata/NFA/OneThirdFromEnd.purs',
+            index: 'examples/Examples/Automata/NFA/OneThirdFromEnd/index.js'
         }
     },
     manifests: [
@@ -48,6 +52,9 @@ var options = {
         },
         'Examples.Automata.DFA.ZeroZeroOne': {
             main: 'Examples.Automata.DFA.ZeroZeroOne'
+        },
+        'Examples.Automata.NFA.OneThirdFromEnd': {
+            main: 'Examples.Automata.NFA.OneThirdFromEnd'
         }
     },
     pscDocs: {}
@@ -152,11 +159,24 @@ gulp.task('examples-Examples.Automata.DFA.ZeroZeroOne', ['examples-Examples.Auto
         .pipe(run('node'));
 });
 
+gulp.task('examples-Examples.Automata.NFA.OneThirdFromEnd-compile', function() {
+    var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.NFA.OneThirdFromEnd'].src];
+    return gulp.src(src)
+        .pipe(purescript.pscMake(options.examples['Examples.Automata.NFA.OneThirdFromEnd']))
+});
+
+gulp.task('examples-Examples.Automata.NFA.OneThirdFromEnd', ['examples-Examples.Automata.NFA.OneThirdFromEnd-compile'], function() {
+    process.env.NODE_PATH = path.resolve(paths.output);
+    return gulp.src(paths.examples['Examples.Automata.NFA.OneThirdFromEnd'].index)
+        .pipe(run('node'));
+});
+
 gulp.task('examples', function() {
     return runSequence('make'
                       , [ 'examples-Examples.Automata.DFA.OddOnes'
                         , 'examples-Examples.Automata.DFA.Turnstile'
                         , 'examples-Examples.Automata.DFA.ZeroZeroOne'
+                        , 'examples-Examples.Automata.NFA.OneThirdFromEnd'
                         ]
                       );
 });

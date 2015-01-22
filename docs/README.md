@@ -42,4 +42,27 @@
     union :: forall sigma state1 state2. (Ord sigma, Ord state1, Ord state2) => DFA state1 sigma -> DFA state2 sigma -> DFA (Tuple state1 state2) sigma
 
 
+## Module Automata.NFA
+
+### Types
+
+
+    data Epsilon sigma where
+      Epsilon :: Epsilon sigma
+      Sigma :: sigma -> Epsilon sigma
+
+
+    data NFA state sigma where
+      NFA :: S.Set state -> S.Set sigma -> (state -> Epsilon sigma -> S.Set state) -> state -> S.Set state -> NFA state sigma
+
+
+### Values
+
+
+    accepts :: forall sigma state. (Ord sigma, Ord state) => NFA state sigma -> [Epsilon sigma] -> Boolean
+
+
+    intersects :: forall v. (Ord v) => S.Set v -> S.Set v -> Boolean
+
+
 
