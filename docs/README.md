@@ -78,10 +78,16 @@
 ### Types
 
 
+    data ConcatenateStates s1 s2
+
+
     data NFA state sigma
 
 
     data NFAError
+
+
+    data UnionStates s1 s2
 
 
 ### Type Class Instances

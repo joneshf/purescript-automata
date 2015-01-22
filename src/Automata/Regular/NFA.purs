@@ -1,6 +1,8 @@
 module Automata.Regular.NFA
   ( NFA()
   , NFAError(..)
+  , ConcatenateStates()
+  , UnionStates()
   , accepts
   , nfa
   ) where
@@ -62,10 +64,11 @@ module Automata.Regular.NFA
           => NFA state sigma
           -> [Epsilon sigma]
           -> Boolean
-  accepts (NFA _ _ d q0 f) inputs = go (singleton q0) inputs
+  accepts (NFA _ _ d q0 f) inputs = go (singleton q0) (intersperse Epsilon inputs)
     where
-      go qs []     = qs `intersects` f
-      go qs (s:ss) = go (unions $ flip d s <$> toList qs) ss
+      go qs []           = qs `intersects` f
+      go qs (Epsilon:ss) = go (unions (qs : (flip d Epsilon <$> toList qs))) ss
+      go qs (s:ss)       = go (unions $ flip d s <$> toList qs) ss
 
   unionImpl :: forall sigma state1 state2
            .  (Ord sigma, Ord state1, Ord state2)
@@ -92,6 +95,8 @@ module Automata.Regular.NFA
     (==) U0     U0      = true
     (==) (U1 q) (U1 q') = q == q'
     (==) (U2 q) (U2 q') = q == q'
+    (==) _      _       = false
+
     (/=) q      q'      = not (q == q')
 
   instance ordUnionStates :: (Ord s1, Ord s2) => Ord (UnionStates s1 s2) where
@@ -129,6 +134,8 @@ module Automata.Regular.NFA
   instance eqConcatenateStates :: (Eq s1, Eq s2) => Eq (ConcatenateStates s1 s2) where
     (==) (C1 q) (C1 q') = q == q'
     (==) (C2 q) (C2 q') = q == q'
+    (==) _      _       = false
+
     (/=) q      q'      = not (q == q')
 
   instance ordConcatenateStates :: (Ord s1, Ord s2) => Ord (ConcatenateStates s1 s2) where
@@ -140,6 +147,7 @@ module Automata.Regular.NFA
     compare q      q'      = compare q' q
 
   -- These should be in `purescript-sets` so they can be more efficient.
+
   isSubsetOf :: forall v. (Ord v) => Set v -> Set v -> Boolean
   isSubsetOf p q = all (flip member q) $ toList p
 
@@ -148,3 +156,8 @@ module Automata.Regular.NFA
 
   intersects :: forall v. (Ord v) => Set v -> Set v -> Boolean
   intersects s1 s2 = s1 `difference` s2 /= s1
+
+  intersperse :: forall a. a -> [a] -> [a]
+  intersperse x []     = []
+  intersperse x [y]    = [y]
+  intersperse x (y:ys) = y:x:intersperse x ys
