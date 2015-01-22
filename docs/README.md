@@ -25,6 +25,12 @@
       Sigma :: sigma -> Epsilon sigma
 
 
+### Type Class Instances
+
+
+    instance eqEpsilon :: (Eq sigma) => Eq (Epsilon sigma)
+
+
 ## Module Automata.Regular.DFA
 
 ### Types
@@ -81,7 +87,16 @@
 ### Type Class Instances
 
 
+    instance concatenateNFA :: (Ord sigma, Ord state1, Ord state2) => C.Concatenate (NFA state1 sigma) (NFA state2 sigma) (NFA (ConcatenateStates state1 state2) sigma)
+
+
+    instance eqConcatenateStates :: (Eq s1, Eq s2) => Eq (ConcatenateStates s1 s2)
+
+
     instance eqUnionStates :: (Eq s1, Eq s2) => Eq (UnionStates s1 s2)
+
+
+    instance ordConcatenateStates :: (Ord s1, Ord s2) => Ord (ConcatenateStates s1 s2)
 
 
     instance ordUnionStates :: (Ord s1, Ord s2) => Ord (UnionStates s1 s2)

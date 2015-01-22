@@ -29,6 +29,10 @@ var paths = {
             src: 'examples/Examples/Automata/Regular/DFA/ZeroZeroOne.purs',
             index: 'examples/Examples/Automata/Regular/DFA/ZeroZeroOne/index.js'
         },
+        'Examples.Automata.Regular.NFA.AB': {
+            src: 'examples/Examples/Automata/Regular/NFA/AB.purs',
+            index: 'examples/Examples/Automata/Regular/NFA/AB/index.js'
+        },
         'Examples.Automata.Regular.NFA.OneThirdFromEnd': {
             src: 'examples/Examples/Automata/Regular/NFA/OneThirdFromEnd.purs',
             index: 'examples/Examples/Automata/Regular/NFA/OneThirdFromEnd/index.js'
@@ -52,6 +56,9 @@ var options = {
         },
         'Examples.Automata.Regular.DFA.ZeroZeroOne': {
             main: 'Examples.Automata.Regular.DFA.ZeroZeroOne'
+        },
+        'Examples.Automata.Regular.NFA.AB': {
+            main: 'Examples.Automata.Regular.NFA.AB'
         },
         'Examples.Automata.Regular.NFA.OneThirdFromEnd': {
             main: 'Examples.Automata.Regular.NFA.OneThirdFromEnd'
@@ -159,6 +166,18 @@ gulp.task('examples-Examples.Automata.Regular.DFA.ZeroZeroOne', ['examples-Examp
         .pipe(run('node'));
 });
 
+gulp.task('examples-Examples.Automata.Regular.NFA.AB-compile', function() {
+    var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.Regular.NFA.AB'].src];
+    return gulp.src(src)
+        .pipe(purescript.pscMake(options.examples['Examples.Automata.Regular.NFA.AB']))
+});
+
+gulp.task('examples-Examples.Automata.Regular.NFA.AB', ['examples-Examples.Automata.Regular.NFA.AB-compile'], function() {
+    process.env.NODE_PATH = path.resolve(paths.output);
+    return gulp.src(paths.examples['Examples.Automata.Regular.NFA.AB'].index)
+        .pipe(run('node'));
+});
+
 gulp.task('examples-Examples.Automata.Regular.NFA.OneThirdFromEnd-compile', function() {
     var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.Regular.NFA.OneThirdFromEnd'].src];
     return gulp.src(src)
@@ -176,6 +195,7 @@ gulp.task('examples', function() {
                       , 'examples-Examples.Automata.Regular.DFA.OddOnes'
                       , 'examples-Examples.Automata.Regular.DFA.Turnstile'
                       , 'examples-Examples.Automata.Regular.DFA.ZeroZeroOne'
+                      , 'examples-Examples.Automata.Regular.NFA.AB'
                       , 'examples-Examples.Automata.Regular.NFA.OneThirdFromEnd'
                       );
 });
