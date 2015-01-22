@@ -42,12 +42,14 @@ module Examples.Automata.Regular.NFA.AB where
   initialB = B0
   acceptingB = singleton B1
 
+  aNFA :: V [NFAError] ANFA
   aNFA = nfa (fromList [A0, A1, AFail])
              (fromList [A, B])
              deltaA
              initialA
              acceptingA
 
+  bNFA :: V [NFAError] BNFA
   bNFA = nfa (fromList [B0, B1, BFail])
              (fromList [A, B])
              deltaB
