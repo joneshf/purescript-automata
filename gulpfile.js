@@ -18,26 +18,28 @@ var paths = {
     docsDest: 'docs/README.md',
     examples: {
         'Examples.Automata.Regular.DFA.OddOnes': {
-            src: 'examples/Examples/Automata/Regular/DFA/OddOnes.purs',
             index: 'examples/Examples/Automata/Regular/DFA/OddOnes/index.js'
         },
         'Examples.Automata.Regular.DFA.Turnstile': {
-            src: 'examples/Examples/Automata/Regular/DFA/Turnstile.purs',
             index: 'examples/Examples/Automata/Regular/DFA/Turnstile/index.js'
         },
         'Examples.Automata.Regular.DFA.ZeroZeroOne': {
-            src: 'examples/Examples/Automata/Regular/DFA/ZeroZeroOne.purs',
             index: 'examples/Examples/Automata/Regular/DFA/ZeroZeroOne/index.js'
         },
+        'Examples.Automata.Regular.NFA.A': {
+            index: 'examples/Examples/Automata/Regular/NFA/A/index.js'
+        },
+        'Examples.Automata.Regular.NFA.B': {
+            index: 'examples/Examples/Automata/Regular/NFA/B/index.js'
+        },
         'Examples.Automata.Regular.NFA.AB': {
-            src: 'examples/Examples/Automata/Regular/NFA/AB.purs',
             index: 'examples/Examples/Automata/Regular/NFA/AB/index.js'
         },
         'Examples.Automata.Regular.NFA.OneThirdFromEnd': {
-            src: 'examples/Examples/Automata/Regular/NFA/OneThirdFromEnd.purs',
             index: 'examples/Examples/Automata/Regular/NFA/OneThirdFromEnd/index.js'
         }
     },
+    examplesSrc: 'examples/**/*.purs',
     manifests: [
         'bower.json',
         'package.json'
@@ -56,6 +58,12 @@ var options = {
         },
         'Examples.Automata.Regular.DFA.ZeroZeroOne': {
             main: 'Examples.Automata.Regular.DFA.ZeroZeroOne'
+        },
+        'Examples.Automata.Regular.NFA.A': {
+            main: 'Examples.Automata.Regular.NFA.A'
+        },
+        'Examples.Automata.Regular.NFA.B': {
+            main: 'Examples.Automata.Regular.NFA.B'
         },
         'Examples.Automata.Regular.NFA.AB': {
             main: 'Examples.Automata.Regular.NFA.AB'
@@ -131,7 +139,7 @@ gulp.task('docs', function() {
 });
 
 gulp.task('examples-Examples.Automata.Regular.DFA.OddOnes-compile', function() {
-    var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.Regular.DFA.OddOnes'].src];
+    var src = [paths.src, paths.bowerSrc, paths.examplesSrc];
     return gulp.src(src)
         .pipe(purescript.pscMake(options.examples['Examples.Automata.Regular.DFA.OddOnes']))
 });
@@ -143,7 +151,7 @@ gulp.task('examples-Examples.Automata.Regular.DFA.OddOnes', ['examples-Examples.
 });
 
 gulp.task('examples-Examples.Automata.Regular.DFA.Turnstile-compile', function() {
-    var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.Regular.DFA.Turnstile'].src];
+    var src = [paths.src, paths.bowerSrc, paths.examplesSrc];
     return gulp.src(src)
         .pipe(purescript.pscMake(options.examples['Examples.Automata.Regular.DFA.Turnstile']))
 });
@@ -155,7 +163,7 @@ gulp.task('examples-Examples.Automata.Regular.DFA.Turnstile', ['examples-Example
 });
 
 gulp.task('examples-Examples.Automata.Regular.DFA.ZeroZeroOne-compile', function() {
-    var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.Regular.DFA.ZeroZeroOne'].src];
+    var src = [paths.src, paths.bowerSrc, paths.examplesSrc];
     return gulp.src(src)
         .pipe(purescript.pscMake(options.examples['Examples.Automata.Regular.DFA.ZeroZeroOne']))
 });
@@ -166,8 +174,32 @@ gulp.task('examples-Examples.Automata.Regular.DFA.ZeroZeroOne', ['examples-Examp
         .pipe(run('node'));
 });
 
+gulp.task('examples-Examples.Automata.Regular.NFA.A-compile', function() {
+    var src = [paths.src, paths.bowerSrc, paths.examplesSrc];
+    return gulp.src(src)
+        .pipe(purescript.pscMake(options.examples['Examples.Automata.Regular.NFA.A']))
+});
+
+gulp.task('examples-Examples.Automata.Regular.NFA.A', ['examples-Examples.Automata.Regular.NFA.A-compile'], function() {
+    process.env.NODE_PATH = path.resolve(paths.output);
+    return gulp.src(paths.examples['Examples.Automata.Regular.NFA.A'].index)
+        .pipe(run('node'));
+});
+
+gulp.task('examples-Examples.Automata.Regular.NFA.B-compile', function() {
+    var src = [paths.src, paths.bowerSrc, paths.examplesSrc];
+    return gulp.src(src)
+        .pipe(purescript.pscMake(options.examples['Examples.Automata.Regular.NFA.B']))
+});
+
+gulp.task('examples-Examples.Automata.Regular.NFA.B', ['examples-Examples.Automata.Regular.NFA.B-compile'], function() {
+    process.env.NODE_PATH = path.resolve(paths.output);
+    return gulp.src(paths.examples['Examples.Automata.Regular.NFA.B'].index)
+        .pipe(run('node'));
+});
+
 gulp.task('examples-Examples.Automata.Regular.NFA.AB-compile', function() {
-    var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.Regular.NFA.AB'].src];
+    var src = [paths.src, paths.bowerSrc, paths.examplesSrc];
     return gulp.src(src)
         .pipe(purescript.pscMake(options.examples['Examples.Automata.Regular.NFA.AB']))
 });
@@ -179,7 +211,7 @@ gulp.task('examples-Examples.Automata.Regular.NFA.AB', ['examples-Examples.Autom
 });
 
 gulp.task('examples-Examples.Automata.Regular.NFA.OneThirdFromEnd-compile', function() {
-    var src = [paths.src, paths.bowerSrc, paths.examples['Examples.Automata.Regular.NFA.OneThirdFromEnd'].src];
+    var src = [paths.src, paths.bowerSrc, paths.examplesSrc];
     return gulp.src(src)
         .pipe(purescript.pscMake(options.examples['Examples.Automata.Regular.NFA.OneThirdFromEnd']))
 });
@@ -195,6 +227,8 @@ gulp.task('examples', function() {
                       , 'examples-Examples.Automata.Regular.DFA.OddOnes'
                       , 'examples-Examples.Automata.Regular.DFA.Turnstile'
                       , 'examples-Examples.Automata.Regular.DFA.ZeroZeroOne'
+                      , 'examples-Examples.Automata.Regular.NFA.A'
+                      , 'examples-Examples.Automata.Regular.NFA.B'
                       , 'examples-Examples.Automata.Regular.NFA.AB'
                       , 'examples-Examples.Automata.Regular.NFA.OneThirdFromEnd'
                       );
