@@ -1,4 +1,4 @@
-module Test.Automata.Regular.NFA.A where
+module Test.Automata.Regular.NFA.A (StateA, aNFA, suite) where
 
 import Prelude
 
@@ -8,9 +8,9 @@ import Data.Function (on)
 import Data.List (List(..), (:))
 import Data.Set (Set, empty, fromFoldable, singleton)
 import Data.Validation.Semigroup (V, unV)
-import Effect (Effect)
 import Test.Automata.Regular.NFA.Alphabet (Alphabet(..))
-import Test.Unit.Console (print)
+import Test.Unit as Test.Unit
+import Test.Unit.Assert as Test.Unit.Assert
 
 -- | We want to describe a language that accepts strings with 1 or more `a`.
 
@@ -37,25 +37,30 @@ aNFA = nfa (fromFoldable [A0, A1, AFail])
            initialA
            acceptingA
 
-runA :: List Alphabet -> String
-runA string = unV show go aNFA
+runA :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
+runA assertion string = unV noGo go aNFA
   where
-    go n = if n `accepts` string' then "Yes!" else "Nope!"
+    go n = assertion (n `accepts` string')
     string' = Sigma <$> string
+    noGo x = Test.Unit.failure (show x)
 
-main :: Effect Unit
-main = do
-  print "Will the a machine accept the string 'a'?"
-  print $ runA (A : Nil)
+suite :: Test.Unit.TestSuite
+suite = Test.Unit.suite "NFA.A" do
+  Test.Unit.test
+    "Will the a machine accept the string 'a'?"
+    (runA (Test.Unit.Assert.assert "It should have!") $ A : Nil)
 
-  print "Will the a machine accept the string 'aaa'?"
-  print $ runA (A : A : A : Nil)
+  Test.Unit.test
+    "Will the a machine accept the string 'aaa'?"
+    (runA (Test.Unit.Assert.assert "It should have!") $ A : A : A : Nil)
 
-  print "Will the a machine accept the string 'b'?"
-  print $ runA (B : Nil)
+  Test.Unit.test
+    "Will the a machine accept the string 'b'?"
+    (runA (Test.Unit.Assert.assertFalse "It should not have!") $ B : Nil)
 
-  print "Will the a machine accept the string 'aba'?"
-  print $ runA (A : B : A : Nil)
+  Test.Unit.test
+    "Will the a machine accept the string 'aba'?"
+    (runA (Test.Unit.Assert.assertFalse "It should not have!") $ A : B : A : Nil)
 
 -- Again, boilerplate
 instance showStateA :: Show StateA where

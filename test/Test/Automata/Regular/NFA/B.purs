@@ -1,4 +1,4 @@
-module Test.Automata.Regular.NFA.B where
+module Test.Automata.Regular.NFA.B (StateB, bNFA, suite) where
 
 import Prelude
 
@@ -8,9 +8,9 @@ import Data.Function (on)
 import Data.List (List(..), (:))
 import Data.Set (Set, empty, fromFoldable, singleton)
 import Data.Validation.Semigroup (V, unV)
-import Effect (Effect)
 import Test.Automata.Regular.NFA.Alphabet (Alphabet(..))
-import Test.Unit.Console (print)
+import Test.Unit as Test.Unit
+import Test.Unit.Assert as Test.Unit.Assert
 
 -- | We want to describe a language that accepts strings with 1 or more `b`.
 
@@ -37,25 +37,30 @@ bNFA = nfa (fromFoldable [B0, B1, BFail])
            initialB
            acceptingB
 
-runB :: (List Alphabet) -> String
-runB string = unV show go bNFA
+runB :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
+runB assertion string = unV noGo go bNFA
   where
-    go n = if n `accepts` string' then "Yes!" else "Nope!"
+    go n = assertion (n `accepts` string')
     string' = Sigma <$> string
+    noGo x = Test.Unit.failure (show x)
 
-main :: Effect Unit
-main = do
-  print "Will the b machine accept the string 'b'?"
-  print $ runB (B : Nil)
+suite :: Test.Unit.TestSuite
+suite = Test.Unit.suite "NFA.B" do
+  Test.Unit.test
+    "Will the b machine accept the string 'b'?"
+    (runB (Test.Unit.Assert.assert "It should have!") $ B : Nil)
 
-  print "Will the b machine accept the string 'bbb'?"
-  print $ runB (B : B : B : Nil)
+  Test.Unit.test
+    "Will the b machine accept the string 'bbb'?"
+    (runB (Test.Unit.Assert.assert "It should have!") $ B : B : B : Nil)
 
-  print "Will the b machine accept the string 'a'?"
-  print $ runB (A : Nil)
+  Test.Unit.test
+    "Will the b machine accept the string 'a'?"
+    (runB (Test.Unit.Assert.assertFalse "It should not have!") $ A : Nil)
 
-  print "Will the b machine accept the string 'bab'?"
-  print $ runB (B : A : B : Nil)
+  Test.Unit.test
+    "Will the b machine accept the string 'bab'?"
+    (runB (Test.Unit.Assert.assertFalse "It should not have!") $ B : A : B : Nil)
 
 instance showStateB :: Show StateB where
   show B0    = "B0"

@@ -1,4 +1,4 @@
-module Test.Automata.Regular.DFA.ZeroZeroOne where
+module Test.Automata.Regular.DFA.ZeroZeroOne (suite) where
 
 import Prelude
 
@@ -7,8 +7,8 @@ import Data.Function (on)
 import Data.List (List(..), (:))
 import Data.Set (fromFoldable, singleton)
 import Data.Validation.Semigroup (V, unV)
-import Effect (Effect)
-import Test.Unit.Console (print)
+import Test.Unit as Test.Unit
+import Test.Unit.Assert as Test.Unit.Assert
 
 -- | We want to represent a language that only accepts strings with "001".
 -- | The states are {Q, Q0, Q00, Q001}
@@ -45,24 +45,30 @@ zeroZeroOne = dfa (fromFoldable [Q, Q0, Q00, Q001])
                   Q
                   (singleton Q001)
 
-run :: List Alphabet -> String
-run string = unV show go zeroZeroOne
+run :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
+run assertion string = unV noGo go zeroZeroOne
   where
-    go x = if x `accepts` string then "Yes!" else "Nope!"
+    go x = assertion (x `accepts` string)
+    noGo x = Test.Unit.failure (show x)
 
-main :: Effect Unit
-main = do
-  print "Will the machine accept the string '0010'?"
-  print $ run (Zero : Zero : One : Zero : Nil)
 
-  print "Will the machine accept the string '1001'?"
-  print $ run (One : Zero : Zero : One : Nil)
+suite :: Test.Unit.TestSuite
+suite = Test.Unit.suite "DFA.ZeroZeroOne" do
+  Test.Unit.test
+    "Will the machine accept the string '0010'?"
+    (run (Test.Unit.Assert.assert "It should have!") $ Zero : Zero : One : Zero : Nil)
 
-  print "Will the machine accept the string '001'?"
-  print $ run (Zero : Zero : One : Nil)
+  Test.Unit.test
+    "Will the machine accept the string '1001'?"
+    (run (Test.Unit.Assert.assert "It should have!") $ One : Zero : Zero : One : Nil)
 
-  print "Will the machine accept the string '11111110011111'?"
-  print $ run (One : One : One : One : One : One : One : Zero : Zero : One : One : One : One : One : Nil)
+  Test.Unit.test
+    "Will the machine accept the string '001'?"
+    (run (Test.Unit.Assert.assert "It should have!") $ Zero : Zero : One : Nil)
+
+  Test.Unit.test
+    "Will the machine accept the string '11111110011111'?"
+    (run (Test.Unit.Assert.assert "It should have!") $ One : One : One : One : One : One : One : Zero : Zero : One : One : One : One : One : Nil)
 
 -- Again, boilerplate
 instance showState :: Show State where

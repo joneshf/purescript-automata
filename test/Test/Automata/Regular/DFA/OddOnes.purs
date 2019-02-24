@@ -1,4 +1,4 @@
-module Test.Automata.Regular.DFA.OddOnes where
+module Test.Automata.Regular.DFA.OddOnes (suite) where
 
 import Prelude
 
@@ -7,8 +7,8 @@ import Data.Function (on)
 import Data.List (List(..), (:))
 import Data.Set (fromFoldable, singleton)
 import Data.Validation.Semigroup (V, unV)
-import Effect (Effect)
-import Test.Unit.Console (print)
+import Test.Unit as Test.Unit
+import Test.Unit.Assert as Test.Unit.Assert
 
 -- | We want to represent a language that has only an odd number of 1's in it.
 -- | The states are {Odd, Even}.
@@ -48,21 +48,25 @@ oddOnes = dfa (fromFoldable [Odd, Even])
               Even
               (singleton Odd)
 
-run :: List Alphabet -> String
-run string = unV show go oddOnes
+run :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
+run assertion string = unV noGo go oddOnes
   where
-    go x = if x `accepts` string then "Yes!" else "Nope!"
+    go x = assertion (x `accepts` string)
+    noGo x = Test.Unit.failure (show x)
 
-main :: Effect Unit
-main = do
-  print "Will the machine accept the string '123'?"
-  print $ run (One : Two : Three : Nil)
+suite :: Test.Unit.TestSuite
+suite = Test.Unit.suite "DFA.OddOnes" do
+  Test.Unit.test
+    "Will the machine accept the string '123'?"
+    (run (Test.Unit.Assert.assert "It should have!") $ One : Two : Three : Nil)
 
-  print "Will the machine accept the string '0'?"
-  print $ run (Zero : Nil)
+  Test.Unit.test
+    "Will the machine accept the string '0'?"
+    (run (Test.Unit.Assert.assertFalse "It should not have!") $ Zero : Nil)
 
-  print "Will the machine accept the string '11'?"
-  print $ run (One : One : Nil)
+  Test.Unit.test
+    "Will the machine accept the string '11'?"
+    (run (Test.Unit.Assert.assertFalse "It should not have!") $ One : One : Nil)
 
 -- Again, boilerplate
 instance showState :: Show State where

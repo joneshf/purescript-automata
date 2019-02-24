@@ -1,4 +1,4 @@
-module Test.Automata.Regular.DFA.Turnstile where
+module Test.Automata.Regular.DFA.Turnstile (suite) where
 
 import Prelude
 
@@ -7,8 +7,8 @@ import Data.Function (on)
 import Data.List (List(..), (:))
 import Data.Set (fromFoldable, singleton)
 import Data.Validation.Semigroup (V, unV)
-import Effect (Effect)
-import Test.Unit.Console (print)
+import Test.Unit as Test.Unit
+import Test.Unit.Assert as Test.Unit.Assert
 
 -- | We want to represent a turnstile "language".
 -- | The states are {Locked, Unlocked}.
@@ -39,19 +39,22 @@ turnstile = dfa (fromFoldable [Locked, Unlocked])
                 Locked
                 (singleton Locked)
 
-bueno :: List Input -> String
-bueno inputs = unV show go turnstile
+run :: (Boolean -> Test.Unit.Test) -> List Input -> Test.Unit.Test
+run assertion string = unV noGo go turnstile
   where
-    go x = if x `accepts` inputs then "Yes!" else "Nope!"
+    go x = assertion (x `accepts` string)
+    noGo x = Test.Unit.failure (show x)
 
-main :: Effect Unit
-main = do
-  print "We approach a turnstile"
-  print "If we put in a coin and turn it, are we good?"
-  print $ bueno (Coin : Turn : Nil)
+suite :: Test.Unit.TestSuite
+suite = Test.Unit.suite "DFA.Turnstile" do
+  Test.Unit.suite "We approach a turnstile" do
+    Test.Unit.test
+      "If we put in a coin and turn it, are we good?"
+      (run (Test.Unit.Assert.assert "We should be!") $ Coin : Turn : Nil)
 
-  print "Excellent : what if we put in two coins?"
-  print $ bueno (Coin : Coin : Nil)
+    Test.Unit.test
+      "Excellent : what if we put in two coins?"
+      (run (Test.Unit.Assert.assertFalse "We shouldn't be!") $ Coin : Coin : Nil)
 
 -- Nevermind this boilerplate...
 instance showInput :: Show Input where

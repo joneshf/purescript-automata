@@ -1,4 +1,4 @@
-module Test.Automata.Regular.NFA.AB where
+module Test.Automata.Regular.NFA.AB (suite) where
 
 import Prelude
 
@@ -7,11 +7,11 @@ import Automata.Epsilon (Epsilon(..))
 import Automata.Regular.NFA (ConcatenateStates, NFA, NFAError, accepts)
 import Data.List (List(..), (:))
 import Data.Validation.Semigroup (V, unV)
-import Effect (Effect)
 import Test.Automata.Regular.NFA.A (StateA, aNFA)
 import Test.Automata.Regular.NFA.Alphabet (Alphabet(..))
 import Test.Automata.Regular.NFA.B (StateB, bNFA)
-import Test.Unit.Console (print)
+import Test.Unit as Test.Unit
+import Test.Unit.Assert as Test.Unit.Assert
 
 -- | We want to describe a language that accepts strings with 1 or more `a`s
 -- | followed by 1 or more `b`s.
@@ -22,22 +22,27 @@ type ABNFA = NFA (ConcatenateStates StateA StateB) Alphabet
 abNFA :: V (List NFAError) ABNFA
 abNFA = concatenate <$> aNFA <*> bNFA
 
-runAB :: List Alphabet -> String
-runAB string = unV show go abNFA
+runAB :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
+runAB assertion string = unV noGo go abNFA
   where
-    go n = if n `accepts` string' then "Yes!" else "Nope!"
+    go n = assertion (n `accepts` string')
     string' = Sigma <$> string
+    noGo x = Test.Unit.failure (show x)
 
-main :: Effect Unit
-main = do
-  print "Will the ab machine accept the string 'a'?"
-  print $ runAB (A : Nil)
+suite :: Test.Unit.TestSuite
+suite = Test.Unit.suite "NFA.AB" do
+  Test.Unit.test
+    "Will the ab machine accept the string 'a'?"
+    (runAB (Test.Unit.Assert.assertFalse "It should not have!") $ A : Nil)
 
-  print "Will the ab machine accept the string 'b'?"
-  print $ runAB (B : Nil)
+  Test.Unit.test
+    "Will the ab machine accept the string 'b'?"
+    (runAB (Test.Unit.Assert.assertFalse "It should not have!") $ B : Nil)
 
-  print "Will the ab machine accept the string 'ab'?"
-  print $ runAB (A : B : Nil)
+  Test.Unit.test
+    "Will the ab machine accept the string 'ab'?"
+    (runAB (Test.Unit.Assert.assert "It should have!") $ A : B : Nil)
 
-  print "Will the ab machine accept the string 'aabb'?"
-  print $ runAB (A : A : B : B : Nil)
+  Test.Unit.test
+    "Will the ab machine accept the string 'aabb'?"
+    (runAB (Test.Unit.Assert.assert "It should have!") $ A : A : B : B : Nil)
