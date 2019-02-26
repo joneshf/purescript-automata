@@ -28,7 +28,13 @@ instance unionDFA
   => C.Union (DFA state1 sigma)
              (DFA state2 sigma)
              (DFA (Tuple state1 state2) sigma) where
-  union = unionImpl
+  union (DFA q1 s1 d1 q01 f1) (DFA q2 s2 d2 q02 f2) =
+    DFA
+      (product q1 q2)
+      (s1 `union` s2)
+      (\(Tuple r1 r2) a -> Tuple (d1 r1 a) (d2 r2 a))
+      (Tuple q01 q02)
+      (product f1 q2 `union` product q1 f2)
 
 -- | A DFA accepts a string in the alphabet
 -- | if the last transition puts the DFA in one of the accepting states.
@@ -38,7 +44,7 @@ accepts :: forall sigma state
         => DFA state sigma
         -> List sigma
         -> Boolean
-accepts (DFA _ _ d q0 f) inputs = go q0 inputs
+accepts (DFA _ _ d q0 f) = go q0
   where
     go q Nil    = q `member` f
     go q (s:ss) = go (d q s) ss
@@ -58,20 +64,9 @@ dfa = DFA (Data.Set.fromFoldable states) (Data.Set.fromFoldable sigma)
     states :: Array state
     states = Data.Enum.enumFromTo bottom top
 
-unionImpl :: forall sigma state1 state2
-          .  Ord sigma
-          => Ord state1
-          => Ord state2
-          => DFA state1 sigma
-          -> DFA state2 sigma
-          -> DFA (Tuple state1 state2) sigma
-unionImpl (DFA s1 s d1 q1 f1) (DFA s2 _ d2 q2 f2) =
-  DFA (product s1 s2)
-      s
-      (\(Tuple r1 r2) a -> Tuple (d1 r1 a) (d2 r2 a))
-      (Tuple q1 q2)
-      (product f1 s2 `union` product s1 f2)
-
 -- These should be in `purescript-sets` so they can be more efficient.
 product :: forall v1 v2. Ord v1 => Ord v2 => Set v1 -> Set v2 -> Set (Tuple v1 v2)
-product s1 s2 = Data.Set.fromFoldable $ Tuple <$> Data.List.fromFoldable s1 <*> Data.List.fromFoldable s2
+product s1' s2' = Data.Set.fromFoldable ado
+  s1 <- Data.List.fromFoldable s1'
+  s2 <- Data.List.fromFoldable s2'
+  in Tuple s1 s2
