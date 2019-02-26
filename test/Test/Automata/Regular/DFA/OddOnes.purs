@@ -2,11 +2,14 @@ module Test.Automata.Regular.DFA.OddOnes (suite) where
 
 import Prelude
 
-import Automata.Regular.DFA (DFA, DFAError, dfa, accepts)
+import Automata.Regular.DFA (DFA, dfa, accepts)
+import Data.Enum as Data.Enum
 import Data.Function (on)
+import Data.Generic.Rep as Data.Generic.Rep
+import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
+import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
 import Data.List (List(..), (:))
-import Data.Set (fromFoldable, singleton)
-import Data.Validation.Semigroup (V, unV)
+import Data.Set as Data.Set
 import Test.Unit as Test.Unit
 import Test.Unit.Assert as Test.Unit.Assert
 
@@ -25,6 +28,21 @@ type OddOnes = DFA State Alphabet
 
 data State = Odd | Even
 
+derive instance genericState :: Data.Generic.Rep.Generic State _
+
+instance boundedState :: Bounded State where
+  bottom = Data.Generic.Rep.Bounded.genericBottom
+  top = Data.Generic.Rep.Bounded.genericTop
+
+instance enumState :: Data.Enum.Enum State where
+  pred = Data.Generic.Rep.Enum.genericPred
+  succ = Data.Generic.Rep.Enum.genericSucc
+
+instance boundedEnumState :: Data.Enum.BoundedEnum State where
+  cardinality = Data.Enum.defaultCardinality
+  toEnum x = Data.Enum.toEnum x
+  fromEnum x = Data.Enum.fromEnum x
+
 data Alphabet = Zero
               | One
               | Two
@@ -36,23 +54,31 @@ data Alphabet = Zero
               | Eight
               | Nine
 
+derive instance genericAlphabet :: Data.Generic.Rep.Generic Alphabet _
+
+instance boundedAlphabet :: Bounded Alphabet where
+  bottom = Data.Generic.Rep.Bounded.genericBottom
+  top = Data.Generic.Rep.Bounded.genericTop
+
+instance enumAlphabet :: Data.Enum.Enum Alphabet where
+  pred = Data.Generic.Rep.Enum.genericPred
+  succ = Data.Generic.Rep.Enum.genericSucc
+
+instance boundedEnumAlphabet :: Data.Enum.BoundedEnum Alphabet where
+  cardinality = Data.Enum.defaultCardinality
+  toEnum x = Data.Enum.toEnum x
+  fromEnum x = Data.Enum.fromEnum x
+
 delta :: State -> Alphabet -> State
 delta Odd  One = Even
 delta Even One = Odd
 delta s    _   = s
 
-oddOnes :: V (List DFAError) OddOnes
-oddOnes = dfa (fromFoldable [Odd, Even])
-              (fromFoldable [Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine])
-              delta
-              Even
-              (singleton Odd)
+oddOnes :: OddOnes
+oddOnes = dfa delta Even (Data.Set.singleton Odd)
 
 run :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
-run assertion string = unV noGo go oddOnes
-  where
-    go x = assertion (x `accepts` string)
-    noGo x = Test.Unit.failure (show x)
+run assertion string = assertion (oddOnes `accepts` string)
 
 suite :: Test.Unit.TestSuite
 suite = Test.Unit.suite "DFA.OddOnes" do

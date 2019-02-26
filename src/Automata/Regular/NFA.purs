@@ -1,6 +1,5 @@
 module Automata.Regular.NFA
   ( NFA()
-  , NFAError(..)
   , ConcatenateStates()
   , UnionStates()
   , accepts
@@ -11,13 +10,12 @@ import Prelude
 
 import Automata.Combinators as C
 import Automata.Epsilon (Epsilon(..))
+import Data.Enum as Data.Enum
 import Data.Foldable as Data.Foldable
 import Data.List (List(..), (:))
 import Data.List as Data.List
 import Data.Set (Set, difference, empty, fromFoldable, insert, member, singleton, union, unions)
 import Data.Set as Data.Set
-import Data.Tuple (Tuple(..))
-import Data.Validation.Semigroup (V)
 
 data NFA state sigma = NFA (Set state)
                            (Set sigma)
@@ -39,29 +37,20 @@ instance concatenateNFA
                    (NFA (ConcatenateStates state1 state2) sigma) where
   concatenate = concatenateImpl
 
-data NFAError
-
-instance showNFAError :: Show NFAError where
-  show _ = ""
-
--- | Attempt to construct and validate an NFA.
+-- | Construct a valid NFA.
 nfa :: forall sigma state
-    .  Ord sigma
-    => Ord state
-    => Set state
-    -> Set sigma
-    -> (state -> Epsilon sigma -> Set state)
+    .  Data.Enum.BoundedEnum sigma
+    => Data.Enum.BoundedEnum state
+    => (state -> Epsilon sigma -> Set state)
     -> state
     -> Set state
-    -> V (List NFAError) (NFA state sigma)
-nfa states sigma d q0 f = validate (NFA states sigma d q0 f)
-
-validate :: forall sigma state
-         .  Ord sigma
-         => Ord state
-         => NFA state sigma
-         -> V (List NFAError) (NFA state sigma)
-validate = pure
+    -> NFA state sigma
+nfa = NFA (Data.Set.fromFoldable states) (Data.Set.fromFoldable sigma)
+  where
+    sigma :: Array sigma
+    sigma = Data.Enum.enumFromTo bottom top
+    states :: Array state
+    states = Data.Enum.enumFromTo bottom top
 
 accepts :: forall sigma state
         .  Ord sigma
@@ -153,9 +142,6 @@ instance ordConcatenateStates :: (Ord s1, Ord s2) => Ord (ConcatenateStates s1 s
   compare q      q'      = compare q' q
 
 -- These should be in `purescript-sets` so they can be more efficient.
-product :: forall v1 v2. Ord v1 => Ord v2 => Set v1 -> Set v2 -> Set (Tuple v1 v2)
-product s1 s2 = Data.Set.fromFoldable $ Tuple <$> Data.List.fromFoldable s1 <*> Data.List.fromFoldable s2
-
 intersects :: forall v. (Ord v) => Set v -> Set v -> Boolean
 intersects s1 s2 = s1 `difference` s2 /= s1
 

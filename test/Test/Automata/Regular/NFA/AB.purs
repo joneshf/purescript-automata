@@ -4,9 +4,8 @@ import Prelude
 
 import Automata.Combinators (concatenate)
 import Automata.Epsilon (Epsilon(..))
-import Automata.Regular.NFA (ConcatenateStates, NFA, NFAError, accepts)
+import Automata.Regular.NFA (ConcatenateStates, NFA, accepts)
 import Data.List (List(..), (:))
-import Data.Validation.Semigroup (V, unV)
 import Test.Automata.Regular.NFA.A (StateA, aNFA)
 import Test.Automata.Regular.NFA.Alphabet (Alphabet(..))
 import Test.Automata.Regular.NFA.B (StateB, bNFA)
@@ -19,15 +18,11 @@ import Test.Unit.Assert as Test.Unit.Assert
 
 type ABNFA = NFA (ConcatenateStates StateA StateB) Alphabet
 
-abNFA :: V (List NFAError) ABNFA
-abNFA = concatenate <$> aNFA <*> bNFA
+abNFA :: ABNFA
+abNFA = concatenate aNFA bNFA
 
 runAB :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
-runAB assertion string = unV noGo go abNFA
-  where
-    go n = assertion (n `accepts` string')
-    string' = Sigma <$> string
-    noGo x = Test.Unit.failure (show x)
+runAB assertion string = assertion (abNFA `accepts` map Sigma string)
 
 suite :: Test.Unit.TestSuite
 suite = Test.Unit.suite "NFA.AB" do

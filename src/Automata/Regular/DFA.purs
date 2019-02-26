@@ -1,6 +1,5 @@
 module Automata.Regular.DFA
   ( DFA()
-  , DFAError(..)
   , accepts
   , dfa
   ) where
@@ -8,12 +7,12 @@ module Automata.Regular.DFA
 import Prelude
 
 import Automata.Combinators as C
+import Data.Enum as Data.Enum
 import Data.List (List(..), (:))
 import Data.List as Data.List
-import Data.Set (Set, member, subset, union)
+import Data.Set (Set, member, union)
 import Data.Set as Data.Set
 import Data.Tuple (Tuple(..))
-import Data.Validation.Semigroup (V, invalid)
 
 -- | A Deterministic Finite Automaton (DFA) is a 5-tuple (Q, Σ, δ, q₀, F)
 -- | We only expose the type.
@@ -31,16 +30,6 @@ instance unionDFA
              (DFA (Tuple state1 state2) sigma) where
   union = unionImpl
 
--- | A DFA can be invalid in one of two conditions.
--- | TODO: It'd be nice to validate that the transition function is total
--- |       Maybe with `purescript-totally`
-data DFAError = StartState   -- q₀ ∉ Q
-              | AcceptStates -- F  ⊈ Q
-
-instance showDFAError :: Show DFAError where
-  show StartState   = "Start state is not a member of the set of states."
-  show AcceptStates = "Accept states are not a subset of the set of states."
-
 -- | A DFA accepts a string in the alphabet
 -- | if the last transition puts the DFA in one of the accepting states.
 accepts :: forall sigma state
@@ -54,42 +43,20 @@ accepts (DFA _ _ d q0 f) inputs = go q0 inputs
     go q Nil    = q `member` f
     go q (s:ss) = go (d q s) ss
 
--- | Attempt to construct and validate a DFA.
+-- | Construct a valid DFA.
 dfa :: forall sigma state
-    .  Ord sigma
-    => Ord state
-    => Set state
-    -> Set sigma
-    -> (state -> sigma -> state)
+    .  Data.Enum.BoundedEnum sigma
+    => Data.Enum.BoundedEnum state
+    => (state -> sigma -> state)
     -> state
     -> Set state
-    -> V (List DFAError) (DFA state sigma)
-dfa states sigma d q0 f = validate (DFA states sigma d q0 f)
-
-validate :: forall sigma state
-         .  Ord sigma
-         => Ord state
-         => DFA state sigma
-         -> V (List DFAError) (DFA state sigma)
-validate dfa' = const <$> validateStart dfa' <*> validateAccept dfa'
-
-validateStart :: forall sigma state
-              .  Ord sigma
-              => Ord state
-              => DFA state sigma
-              -> V (List DFAError) (DFA state sigma)
-validateStart dfa'@(DFA states _ _ q0 _)
-  | q0 `member` states = pure dfa'
-  | otherwise          = invalid (pure StartState)
-
-validateAccept :: forall sigma state
-               .  Ord sigma
-               => Ord state
-               => DFA state sigma
-               -> V (List DFAError) (DFA state sigma)
-validateAccept dfa'@(DFA states _ _ _ f)
-  | f `subset` states = pure dfa'
-  | otherwise         = invalid (pure AcceptStates)
+    -> DFA state sigma
+dfa = DFA (Data.Set.fromFoldable states) (Data.Set.fromFoldable sigma)
+  where
+    sigma :: Array sigma
+    sigma = Data.Enum.enumFromTo bottom top
+    states :: Array state
+    states = Data.Enum.enumFromTo bottom top
 
 unionImpl :: forall sigma state1 state2
           .  Ord sigma

@@ -3,11 +3,14 @@ module Test.Automata.Regular.NFA.B (StateB, bNFA, suite) where
 import Prelude
 
 import Automata.Epsilon (Epsilon(..))
-import Automata.Regular.NFA (NFA, NFAError, accepts, nfa)
+import Automata.Regular.NFA (NFA, accepts, nfa)
+import Data.Enum as Data.Enum
 import Data.Function (on)
+import Data.Generic.Rep as Data.Generic.Rep
+import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
+import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
 import Data.List (List(..), (:))
-import Data.Set (Set, empty, fromFoldable, singleton)
-import Data.Validation.Semigroup (V, unV)
+import Data.Set (Set, empty, singleton)
 import Test.Automata.Regular.NFA.Alphabet (Alphabet(..))
 import Test.Unit as Test.Unit
 import Test.Unit.Assert as Test.Unit.Assert
@@ -17,6 +20,21 @@ import Test.Unit.Assert as Test.Unit.Assert
 type BNFA = NFA StateB Alphabet
 
 data StateB = B0 | B1 | BFail
+
+derive instance genericStateB :: Data.Generic.Rep.Generic StateB _
+
+instance boundedStateB :: Bounded StateB where
+  bottom = Data.Generic.Rep.Bounded.genericBottom
+  top = Data.Generic.Rep.Bounded.genericTop
+
+instance enumStateB :: Data.Enum.Enum StateB where
+  pred = Data.Generic.Rep.Enum.genericPred
+  succ = Data.Generic.Rep.Enum.genericSucc
+
+instance boundedEnumStateB :: Data.Enum.BoundedEnum StateB where
+  cardinality = Data.Enum.defaultCardinality
+  toEnum x = Data.Enum.toEnum x
+  fromEnum x = Data.Enum.fromEnum x
 
 deltaB :: StateB -> Epsilon Alphabet -> Set StateB
 deltaB B0    (Sigma B) = singleton B1
@@ -30,19 +48,11 @@ initialB = B0
 acceptingB :: Set StateB
 acceptingB = singleton B1
 
-bNFA :: V (List NFAError) BNFA
-bNFA = nfa (fromFoldable [B0, B1, BFail])
-           (fromFoldable [A, B])
-           deltaB
-           initialB
-           acceptingB
+bNFA :: BNFA
+bNFA = nfa deltaB initialB acceptingB
 
 runB :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
-runB assertion string = unV noGo go bNFA
-  where
-    go n = assertion (n `accepts` string')
-    string' = Sigma <$> string
-    noGo x = Test.Unit.failure (show x)
+runB assertion string = assertion (bNFA `accepts` map Sigma string)
 
 suite :: Test.Unit.TestSuite
 suite = Test.Unit.suite "NFA.B" do

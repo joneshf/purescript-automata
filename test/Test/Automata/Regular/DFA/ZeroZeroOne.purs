@@ -2,11 +2,14 @@ module Test.Automata.Regular.DFA.ZeroZeroOne (suite) where
 
 import Prelude
 
-import Automata.Regular.DFA (DFA, DFAError, dfa, accepts)
+import Automata.Regular.DFA (DFA, dfa, accepts)
+import Data.Enum as Data.Enum
 import Data.Function (on)
+import Data.Generic.Rep as Data.Generic.Rep
+import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
+import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
 import Data.List (List(..), (:))
-import Data.Set (fromFoldable, singleton)
-import Data.Validation.Semigroup (V, unV)
+import Data.Set as Data.Set
 import Test.Unit as Test.Unit
 import Test.Unit.Assert as Test.Unit.Assert
 
@@ -27,7 +30,37 @@ type ZeroZeroOne = DFA State Alphabet
 
 data State = Q | Q0 | Q00 | Q001
 
+derive instance genericState :: Data.Generic.Rep.Generic State _
+
+instance boundedState :: Bounded State where
+  bottom = Data.Generic.Rep.Bounded.genericBottom
+  top = Data.Generic.Rep.Bounded.genericTop
+
+instance enumState :: Data.Enum.Enum State where
+  pred = Data.Generic.Rep.Enum.genericPred
+  succ = Data.Generic.Rep.Enum.genericSucc
+
+instance boundedEnumState :: Data.Enum.BoundedEnum State where
+  cardinality = Data.Enum.defaultCardinality
+  toEnum x = Data.Enum.toEnum x
+  fromEnum x = Data.Enum.fromEnum x
+
 data Alphabet = Zero | One
+
+derive instance genericAlphabet :: Data.Generic.Rep.Generic Alphabet _
+
+instance boundedAlphabet :: Bounded Alphabet where
+  bottom = Data.Generic.Rep.Bounded.genericBottom
+  top = Data.Generic.Rep.Bounded.genericTop
+
+instance enumAlphabet :: Data.Enum.Enum Alphabet where
+  pred = Data.Generic.Rep.Enum.genericPred
+  succ = Data.Generic.Rep.Enum.genericSucc
+
+instance boundedEnumAlphabet :: Data.Enum.BoundedEnum Alphabet where
+  cardinality = Data.Enum.defaultCardinality
+  toEnum x = Data.Enum.toEnum x
+  fromEnum x = Data.Enum.fromEnum x
 
 delta :: State -> Alphabet -> State
 delta Q    Zero = Q0
@@ -38,19 +71,11 @@ delta Q00  Zero = Q00
 delta Q00  One  = Q001
 delta Q001 _    = Q001
 
-zeroZeroOne :: V (List DFAError) ZeroZeroOne
-zeroZeroOne = dfa (fromFoldable [Q, Q0, Q00, Q001])
-                  (fromFoldable [Zero, One])
-                  delta
-                  Q
-                  (singleton Q001)
+zeroZeroOne :: ZeroZeroOne
+zeroZeroOne = dfa delta Q (Data.Set.singleton Q001)
 
 run :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
-run assertion string = unV noGo go zeroZeroOne
-  where
-    go x = assertion (x `accepts` string)
-    noGo x = Test.Unit.failure (show x)
-
+run assertion string = assertion (zeroZeroOne `accepts` string)
 
 suite :: Test.Unit.TestSuite
 suite = Test.Unit.suite "DFA.ZeroZeroOne" do

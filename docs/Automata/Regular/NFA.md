@@ -12,17 +12,6 @@ data NFA state sigma
 (Ord sigma, Ord state1, Ord state2) => Concatenate (NFA state1 sigma) (NFA state2 sigma) (NFA (ConcatenateStates state1 state2) sigma)
 ```
 
-#### `NFAError`
-
-``` purescript
-data NFAError
-```
-
-##### Instances
-``` purescript
-Show NFAError
-```
-
 #### `ConcatenateStates`
 
 ``` purescript
@@ -58,7 +47,7 @@ accepts :: forall sigma state. Ord sigma => Ord state => NFA state sigma -> List
 #### `nfa`
 
 ``` purescript
-nfa :: forall sigma state. Ord sigma => Ord state => Set state -> Set sigma -> (state -> Epsilon sigma -> Set state) -> state -> Set state -> V (List NFAError) (NFA state sigma)
+nfa :: forall sigma state. BoundedEnum sigma => BoundedEnum state => (state -> Epsilon sigma -> Set state) -> state -> Set state -> NFA state sigma
 ```
 
 Attempt to construct and validate an NFA.

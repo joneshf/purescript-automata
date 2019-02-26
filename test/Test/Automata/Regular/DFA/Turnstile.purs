@@ -2,11 +2,14 @@ module Test.Automata.Regular.DFA.Turnstile (suite) where
 
 import Prelude
 
-import Automata.Regular.DFA (DFA, DFAError, dfa, accepts)
+import Automata.Regular.DFA (DFA, dfa, accepts)
+import Data.Enum as Data.Enum
 import Data.Function (on)
+import Data.Generic.Rep as Data.Generic.Rep
+import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
+import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
 import Data.List (List(..), (:))
-import Data.Set (fromFoldable, singleton)
-import Data.Validation.Semigroup (V, unV)
+import Data.Set as Data.Set
 import Test.Unit as Test.Unit
 import Test.Unit.Assert as Test.Unit.Assert
 
@@ -24,7 +27,37 @@ type Turnstile = DFA State Input
 
 data Input = Coin | Turn
 
+derive instance genericInput :: Data.Generic.Rep.Generic Input _
+
+instance boundedInput :: Bounded Input where
+  bottom = Data.Generic.Rep.Bounded.genericBottom
+  top = Data.Generic.Rep.Bounded.genericTop
+
+instance enumInput :: Data.Enum.Enum Input where
+  pred = Data.Generic.Rep.Enum.genericPred
+  succ = Data.Generic.Rep.Enum.genericSucc
+
+instance boundedEnumInput :: Data.Enum.BoundedEnum Input where
+  cardinality = Data.Enum.defaultCardinality
+  toEnum x = Data.Enum.toEnum x
+  fromEnum x = Data.Enum.fromEnum x
+
 data State = Locked | Unlocked
+
+derive instance genericState :: Data.Generic.Rep.Generic State _
+
+instance boundedState :: Bounded State where
+  bottom = Data.Generic.Rep.Bounded.genericBottom
+  top = Data.Generic.Rep.Bounded.genericTop
+
+instance enumState :: Data.Enum.Enum State where
+  pred = Data.Generic.Rep.Enum.genericPred
+  succ = Data.Generic.Rep.Enum.genericSucc
+
+instance boundedEnumState :: Data.Enum.BoundedEnum State where
+  cardinality = Data.Enum.defaultCardinality
+  toEnum x = Data.Enum.toEnum x
+  fromEnum x = Data.Enum.fromEnum x
 
 delta :: State -> Input -> State
 delta Locked   Coin = Unlocked
@@ -32,18 +65,11 @@ delta Locked   Turn = Locked
 delta Unlocked Coin = Unlocked
 delta Unlocked Turn = Locked
 
-turnstile :: V (List DFAError) Turnstile
-turnstile = dfa (fromFoldable [Locked, Unlocked])
-                (fromFoldable [Coin, Turn])
-                delta
-                Locked
-                (singleton Locked)
+turnstile :: Turnstile
+turnstile = dfa delta Locked (Data.Set.singleton Locked)
 
 run :: (Boolean -> Test.Unit.Test) -> List Input -> Test.Unit.Test
-run assertion string = unV noGo go turnstile
-  where
-    go x = assertion (x `accepts` string)
-    noGo x = Test.Unit.failure (show x)
+run assertion string = assertion (turnstile `accepts` string)
 
 suite :: Test.Unit.TestSuite
 suite = Test.Unit.suite "DFA.Turnstile" do

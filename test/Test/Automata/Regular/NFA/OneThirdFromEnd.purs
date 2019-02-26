@@ -3,11 +3,14 @@ module Test.Automata.Regular.NFA.OneThirdFromEnd (suite) where
 import Prelude
 
 import Automata.Epsilon (Epsilon(..))
-import Automata.Regular.NFA (NFA, NFAError, accepts, nfa)
+import Automata.Regular.NFA (NFA, accepts, nfa)
+import Data.Enum as Data.Enum
 import Data.Function (on)
+import Data.Generic.Rep as Data.Generic.Rep
+import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
+import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
 import Data.List (List(..), (:))
 import Data.Set (Set, empty, fromFoldable, singleton)
-import Data.Validation.Semigroup (V, unV)
 import Test.Unit as Test.Unit
 import Test.Unit.Assert as Test.Unit.Assert
 
@@ -15,7 +18,37 @@ type OneThirdFromEnd = NFA State Alphabet
 
 data State = Q1 | Q2 | Q3 | Q4
 
+derive instance genericState :: Data.Generic.Rep.Generic State _
+
+instance boundedState :: Bounded State where
+  bottom = Data.Generic.Rep.Bounded.genericBottom
+  top = Data.Generic.Rep.Bounded.genericTop
+
+instance enumState :: Data.Enum.Enum State where
+  pred = Data.Generic.Rep.Enum.genericPred
+  succ = Data.Generic.Rep.Enum.genericSucc
+
+instance boundedEnumState :: Data.Enum.BoundedEnum State where
+  cardinality = Data.Enum.defaultCardinality
+  toEnum x = Data.Enum.toEnum x
+  fromEnum x = Data.Enum.fromEnum x
+
 data Alphabet = Zero | One
+
+derive instance genericAlphabet :: Data.Generic.Rep.Generic Alphabet _
+
+instance boundedAlphabet :: Bounded Alphabet where
+  bottom = Data.Generic.Rep.Bounded.genericBottom
+  top = Data.Generic.Rep.Bounded.genericTop
+
+instance enumAlphabet :: Data.Enum.Enum Alphabet where
+  pred = Data.Generic.Rep.Enum.genericPred
+  succ = Data.Generic.Rep.Enum.genericSucc
+
+instance boundedEnumAlphabet :: Data.Enum.BoundedEnum Alphabet where
+  cardinality = Data.Enum.defaultCardinality
+  toEnum x = Data.Enum.toEnum x
+  fromEnum x = Data.Enum.fromEnum x
 
 delta :: State -> Epsilon Alphabet -> Set State
 delta Q1 (Sigma Zero) = singleton Q1
@@ -31,19 +64,11 @@ initial = Q1
 accepting :: Set State
 accepting = singleton Q4
 
-oneThirdFromEnd :: V (List NFAError) (NFA State Alphabet)
-oneThirdFromEnd = nfa (fromFoldable [Q1, Q2, Q3, Q4])
-                      (fromFoldable [Zero, One])
-                      delta
-                      initial
-                      accepting
+oneThirdFromEnd :: NFA State Alphabet
+oneThirdFromEnd = nfa delta initial accepting
 
 run :: (Boolean -> Test.Unit.Test) -> List Alphabet -> Test.Unit.Test
-run assertion string = unV noGo go oneThirdFromEnd
-  where
-    go x = assertion (x `accepts` string')
-    noGo x = Test.Unit.failure (show x)
-    string' = Sigma <$> string
+run assertion string = assertion (oneThirdFromEnd `accepts` map Sigma string)
 
 suite :: Test.Unit.TestSuite
 suite = Test.Unit.suite "NFA.OneThirdFromEnd" do
