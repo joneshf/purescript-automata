@@ -88,22 +88,9 @@ unionImpl (NFA s1 s d1 q1 f1) (NFA s2 _ d2 q2 f2) =
 
 data UnionStates s1 s2 = U0 | U1 s1 | U2 s2
 
-instance eqUnionStates :: (Eq s1, Eq s2) => Eq (UnionStates s1 s2) where
-  eq U0     U0      = true
-  eq (U1 q) (U1 q') = q == q'
-  eq (U2 q) (U2 q') = q == q'
-  eq _      _       = false
+derive instance eqUnionStates :: (Eq s1, Eq s2) => Eq (UnionStates s1 s2)
 
-instance ordUnionStates :: (Ord s1, Ord s2) => Ord (UnionStates s1 s2) where
-  compare U0     U0      = EQ
-  compare U0     _       = LT
-
-  compare (U1 _) (U2 _)  = LT
-  compare (U1 q) (U1 q') = compare q q'
-
-  compare (U2 q) (U2 q') = compare q q'
-
-  compare q      q'      = compare q' q
+derive instance ordUnionStates :: (Ord s1, Ord s2) => Ord (UnionStates s1 s2)
 
 concatenateImpl :: forall sigma state1 state2
                 .  Ord sigma
@@ -128,18 +115,9 @@ concatenateImpl (NFA s1 s d1 q1 f1) (NFA s2 _ d2 q2 f2) =
 
 data ConcatenateStates s1 s2 = C1 s1 | C2 s2
 
-instance eqConcatenateStates :: (Eq s1, Eq s2) => Eq (ConcatenateStates s1 s2) where
-  eq (C1 q) (C1 q') = q == q'
-  eq (C2 q) (C2 q') = q == q'
-  eq _      _       = false
+derive instance eqConcatenateStates :: (Eq s1, Eq s2) => Eq (ConcatenateStates s1 s2)
 
-instance ordConcatenateStates :: (Ord s1, Ord s2) => Ord (ConcatenateStates s1 s2) where
-  compare (C1 _) (C2 _)  = LT
-  compare (C1 q) (C1 q') = compare q q'
-
-  compare (C2 q) (C2 q') = compare q q'
-
-  compare q      q'      = compare q' q
+derive instance ordConcatenateStates :: (Ord s1, Ord s2) => Ord (ConcatenateStates s1 s2)
 
 -- These should be in `purescript-sets` so they can be more efficient.
 intersects :: forall v. (Ord v) => Set v -> Set v -> Boolean

@@ -5,7 +5,6 @@ import Prelude
 import Automata.Epsilon (Epsilon(..))
 import Automata.Regular.NFA (NFA, accepts, nfa)
 import Data.Enum as Data.Enum
-import Data.Function (on)
 import Data.Generic.Rep as Data.Generic.Rep
 import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
 import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
@@ -19,6 +18,10 @@ type OneThirdFromEnd = NFA State Alphabet
 data State = Q1 | Q2 | Q3 | Q4
 
 derive instance genericState :: Data.Generic.Rep.Generic State _
+
+derive instance eqState :: Eq State
+
+derive instance ordState :: Ord State
 
 instance boundedState :: Bounded State where
   bottom = Data.Generic.Rep.Bounded.genericBottom
@@ -36,6 +39,10 @@ instance boundedEnumState :: Data.Enum.BoundedEnum State where
 data Alphabet = Zero | One
 
 derive instance genericAlphabet :: Data.Generic.Rep.Generic Alphabet _
+
+derive instance eqAlphabet :: Eq Alphabet
+
+derive instance ordAlphabet :: Ord Alphabet
 
 instance boundedAlphabet :: Bounded Alphabet where
   bottom = Data.Generic.Rep.Bounded.genericBottom
@@ -79,26 +86,3 @@ suite = Test.Unit.suite "NFA.OneThirdFromEnd" do
   Test.Unit.test
     "Will the machine accept the string '0011'?"
     (run (Test.Unit.Assert.assertFalse "It should not have!") $ Zero : Zero : One : One : Nil)
-
-    -- Again, boilerplate
-instance showState :: Show State where
-  show Q1 = "Q1"
-  show Q2 = "Q2"
-  show Q3 = "Q3"
-  show Q4 = "Q4"
-
-instance eqState :: Eq State where
-  eq = eq `on` show
-
-instance ordState :: Ord State where
-  compare = compare `on` show
-
-instance showAlphabet :: Show Alphabet where
-  show Zero  = "0"
-  show One   = "1"
-
-instance eqAlphabet :: Eq Alphabet where
-  eq = eq `on` show
-
-instance ordAlphabet :: Ord Alphabet where
-  compare = compare `on` show

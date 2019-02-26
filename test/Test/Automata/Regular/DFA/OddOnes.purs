@@ -4,7 +4,6 @@ import Prelude
 
 import Automata.Regular.DFA (DFA, dfa, accepts)
 import Data.Enum as Data.Enum
-import Data.Function (on)
 import Data.Generic.Rep as Data.Generic.Rep
 import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
 import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
@@ -29,6 +28,10 @@ type OddOnes = DFA State Alphabet
 data State = Odd | Even
 
 derive instance genericState :: Data.Generic.Rep.Generic State _
+
+derive instance eqState :: Eq State
+
+derive instance ordState :: Ord State
 
 instance boundedState :: Bounded State where
   bottom = Data.Generic.Rep.Bounded.genericBottom
@@ -55,6 +58,10 @@ data Alphabet = Zero
               | Nine
 
 derive instance genericAlphabet :: Data.Generic.Rep.Generic Alphabet _
+
+derive instance eqAlphabet :: Eq Alphabet
+
+derive instance ordAlphabet :: Ord Alphabet
 
 instance boundedAlphabet :: Bounded Alphabet where
   bottom = Data.Generic.Rep.Bounded.genericBottom
@@ -93,32 +100,3 @@ suite = Test.Unit.suite "DFA.OddOnes" do
   Test.Unit.test
     "Will the machine accept the string '11'?"
     (run (Test.Unit.Assert.assertFalse "It should not have!") $ One : One : Nil)
-
--- Again, boilerplate
-instance showState :: Show State where
-  show Odd  = "Odd"
-  show Even = "Even"
-
-instance eqState :: Eq State where
-  eq = eq `on` show
-
-instance ordState :: Ord State where
-  compare = compare `on` show
-
-instance showAlphabet :: Show Alphabet where
-  show Zero  = "0"
-  show One   = "1"
-  show Two   = "2"
-  show Three = "3"
-  show Four  = "4"
-  show Five  = "5"
-  show Six   = "6"
-  show Seven = "7"
-  show Eight = "8"
-  show Nine  = "9"
-
-instance eqAlphabet :: Eq Alphabet where
-  eq = eq `on` show
-
-instance ordAlphabet :: Ord Alphabet where
-  compare = compare `on` show

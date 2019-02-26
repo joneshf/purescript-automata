@@ -5,7 +5,6 @@ import Prelude
 import Automata.Epsilon (Epsilon(..))
 import Automata.Regular.NFA (NFA, accepts, nfa)
 import Data.Enum as Data.Enum
-import Data.Function (on)
 import Data.Generic.Rep as Data.Generic.Rep
 import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
 import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
@@ -22,6 +21,10 @@ type BNFA = NFA StateB Alphabet
 data StateB = B0 | B1 | BFail
 
 derive instance genericStateB :: Data.Generic.Rep.Generic StateB _
+
+derive instance eqStateB :: Eq StateB
+
+derive instance ordStateB :: Ord StateB
 
 instance boundedStateB :: Bounded StateB where
   bottom = Data.Generic.Rep.Bounded.genericBottom
@@ -71,14 +74,3 @@ suite = Test.Unit.suite "NFA.B" do
   Test.Unit.test
     "Will the b machine accept the string 'bab'?"
     (runB (Test.Unit.Assert.assertFalse "It should not have!") $ B : A : B : Nil)
-
-instance showStateB :: Show StateB where
-  show B0    = "B0"
-  show B1    = "B1"
-  show BFail = "BFail"
-
-instance eqStateB :: Eq StateB where
-  eq = eq `on` show
-
-instance ordStateB :: Ord StateB where
-  compare = compare `on` show

@@ -4,7 +4,6 @@ import Prelude
 
 import Automata.Regular.DFA (DFA, dfa, accepts)
 import Data.Enum as Data.Enum
-import Data.Function (on)
 import Data.Generic.Rep as Data.Generic.Rep
 import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
 import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
@@ -29,6 +28,10 @@ data Input = Coin | Turn
 
 derive instance genericInput :: Data.Generic.Rep.Generic Input _
 
+derive instance eqInput :: Eq Input
+
+derive instance ordInput :: Ord Input
+
 instance boundedInput :: Bounded Input where
   bottom = Data.Generic.Rep.Bounded.genericBottom
   top = Data.Generic.Rep.Bounded.genericTop
@@ -45,6 +48,10 @@ instance boundedEnumInput :: Data.Enum.BoundedEnum Input where
 data State = Locked | Unlocked
 
 derive instance genericState :: Data.Generic.Rep.Generic State _
+
+derive instance eqState :: Eq State
+
+derive instance ordState :: Ord State
 
 instance boundedState :: Bounded State where
   bottom = Data.Generic.Rep.Bounded.genericBottom
@@ -81,24 +88,3 @@ suite = Test.Unit.suite "DFA.Turnstile" do
     Test.Unit.test
       "Excellent : what if we put in two coins?"
       (run (Test.Unit.Assert.assertFalse "We shouldn't be!") $ Coin : Coin : Nil)
-
--- Nevermind this boilerplate...
-instance showInput :: Show Input where
-  show Coin = "Coin"
-  show Turn = "Turn"
-
-instance showState :: Show State where
-  show Locked   = "Locked"
-  show Unlocked = "Unlocked"
-
-instance eqInput :: Eq Input where
-  eq = eq `on` show
-
-instance ordInput :: Ord Input where
-  compare = compare `on` show
-
-instance eqState :: Eq State where
-  eq = eq `on` show
-
-instance ordState :: Ord State where
-  compare = compare `on` show

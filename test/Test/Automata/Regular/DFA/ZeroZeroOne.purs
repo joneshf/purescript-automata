@@ -4,7 +4,6 @@ import Prelude
 
 import Automata.Regular.DFA (DFA, dfa, accepts)
 import Data.Enum as Data.Enum
-import Data.Function (on)
 import Data.Generic.Rep as Data.Generic.Rep
 import Data.Generic.Rep.Bounded as Data.Generic.Rep.Bounded
 import Data.Generic.Rep.Enum as Data.Generic.Rep.Enum
@@ -32,6 +31,10 @@ data State = Q | Q0 | Q00 | Q001
 
 derive instance genericState :: Data.Generic.Rep.Generic State _
 
+derive instance eqState :: Eq State
+
+derive instance ordState :: Ord State
+
 instance boundedState :: Bounded State where
   bottom = Data.Generic.Rep.Bounded.genericBottom
   top = Data.Generic.Rep.Bounded.genericTop
@@ -48,6 +51,10 @@ instance boundedEnumState :: Data.Enum.BoundedEnum State where
 data Alphabet = Zero | One
 
 derive instance genericAlphabet :: Data.Generic.Rep.Generic Alphabet _
+
+derive instance eqAlphabet :: Eq Alphabet
+
+derive instance ordAlphabet :: Ord Alphabet
 
 instance boundedAlphabet :: Bounded Alphabet where
   bottom = Data.Generic.Rep.Bounded.genericBottom
@@ -94,26 +101,3 @@ suite = Test.Unit.suite "DFA.ZeroZeroOne" do
   Test.Unit.test
     "Will the machine accept the string '11111110011111'?"
     (run (Test.Unit.Assert.assert "It should have!") $ One : One : One : One : One : One : One : Zero : Zero : One : One : One : One : One : Nil)
-
--- Again, boilerplate
-instance showState :: Show State where
-  show Q    = "Q"
-  show Q0   = "Q0"
-  show Q00  = "Q00"
-  show Q001 = "Q001"
-
-instance eqState :: Eq State where
-  eq = eq `on` show
-
-instance ordState :: Ord State where
-  compare = compare `on` show
-
-instance showAlphabet :: Show Alphabet where
-  show Zero  = "0"
-  show One   = "1"
-
-instance eqAlphabet :: Eq Alphabet where
-  eq = eq `on` show
-
-instance ordAlphabet :: Ord Alphabet where
-  compare = compare `on` show
